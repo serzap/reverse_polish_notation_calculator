@@ -59,43 +59,49 @@ TEST(CalculatorTest, TestWrongArgument)
     EXPECT_DOUBLE_EQ(0.0, result.value);
     EXPECT_EQ(Error::WrongOperand, result.error);
 }
-/*
+
 TEST(CalculatorTest, TestEmptyString)
 {
     auto result = calculateExpression("");
-    EXPECT_DOUBLE_EQ(28.0, result);
+    EXPECT_DOUBLE_EQ(0.0, result.value);
+    EXPECT_EQ(Error::EmptyString, result.error);
 }
 
 TEST(CalculatorTest, TestWrongOrder)
 {
     auto result = calculateExpression("+ 2 2");
-    EXPECT_DOUBLE_EQ(28.0, result);
+    EXPECT_DOUBLE_EQ(0.0, result.value);
+    EXPECT_EQ(Error::WrongOperand, result.error);
 }
 
 TEST(CalculatorTest, TestWrongOperands)
 {
     auto result = calculateExpression("2 2 + 2 2");
-    EXPECT_DOUBLE_EQ(28.0, result);
+    EXPECT_DOUBLE_EQ(0.0, result.value);
+    EXPECT_EQ(Error::WrongOperation, result.error);
 }
 
 TEST(CalculatorTest, TestRandomString)
 {
     auto result = calculateExpression("abcde");
-    EXPECT_DOUBLE_EQ(28.0, result);
+    EXPECT_DOUBLE_EQ(0.0, result.value);
+    EXPECT_EQ(Error::WrongOperand, result.error);
 }
 
 TEST(CalculatorTest, TestWrongSymbolsInput)
 {
     auto result = calculateExpression("2 2 - a");
-    EXPECT_DOUBLE_EQ(28.0, result);
+    EXPECT_DOUBLE_EQ(0.0, result.value);
+    EXPECT_EQ(Error::WrongOperand, result.error);
 }
 
 TEST(CalculatorTest, TestOpearionsWithDoubles)
 {
     auto result = calculateExpression("2.0 2.0 +");
-    EXPECT_DOUBLE_EQ(28.0, result);
+    EXPECT_DOUBLE_EQ(4.0, result.value);
+    EXPECT_EQ(Error::NoError, result.error);
 }
-
+/*
 TEST(CalculatorTest, TestNumericLimitsWithPlus)
 {
     auto result = calculateExpression("250000000000 250000000000 +");

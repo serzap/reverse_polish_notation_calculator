@@ -32,17 +32,31 @@ Result calculateExpression(const std::string & expr)
         {
             if(StackState::WaitingFirstOperand == state)
             {
-                operand1 = std::stod(*token);
-                state = StackState::WaitingSecondOperand;
+                if(true == isValidOperand(*token))
+                {
+                    operand1 = std::stod(*token);
+                    state = StackState::WaitingSecondOperand;
+                }
+                else
+                {
+                    return {0.0, Error::WrongOperand};
+                }
             }
             else if (StackState::WaitingSecondOperand == state)
             {
-                operand2 = std::stod(*token);
-                state = StackState::WaitingOperation;
+                if(true == isValidOperand(*token))
+                {
+                    operand2 = std::stod(*token);
+                    state = StackState::WaitingOperation;
+                }
+                else
+                {
+                    return {0.0, Error::WrongOperand};
+                }
             }
             else if (StackState::WaitingOperation)
             {
-                if(true == isOperation(*token))
+                if(true == isValidOperation(*token))
                 {
                     operation = *token;
                     res = calculateOperation(operand1, operand2, operation);
@@ -62,11 +76,6 @@ Result calculateExpression(const std::string & expr)
         }
     }
     return res;
-}
-
-bool isOperation(const std::string & operation)
-{
-    return ("+" == operation || "-" == operation || "*" == operation || "/" == operation);
 }
 
 Result calculateOperation(double operand1, double operand2, const std::string& operation)
@@ -96,5 +105,18 @@ Result calculateOperation(double operand1, double operand2, const std::string& o
         }
     }
     return res;
+}
+
+bool isValidOperation(const std::string & operation)
+{
+    //return ("+" == operation || "-" == operation || "*" == operation || "/" == operation);
+    std::regex r("[\+\-\/\*]");
+    return std::regex_match(operation, r);
+}
+
+bool isValidOperand(const std::string & operand)
+{
+    std::regex r("[-+]?[0-9]*\.?[0-9]+");
+    return std::regex_match(operand, r);
 }
 
