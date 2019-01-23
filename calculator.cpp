@@ -1,8 +1,6 @@
 #include "calculator.hpp"
 
-enum StackState{Empty, OneOperandEntered, TwoOperandsEntered, OperationEntered, Invalid};
-
-std::vector<std::string> split(const std::string& s, char delimiter)
+std::vector<std::string> parse(const std::string& s, char delimiter)
 {
    std::vector<std::string> tokens;
    std::string token;
@@ -14,67 +12,89 @@ std::vector<std::string> split(const std::string& s, char delimiter)
    return tokens;
 }
 
-double calculateExpression(const std::string & expr)
+Result calculateExpression(const std::string & expr)
 {
-    auto tokens = split(expr, ' ');
+    if(true == expr.empty())
+    {
+        return Result{0.0, Error::EmptyString};
+    }
+
+    auto tokens = parse(expr, ' ');
     std::string operation = "";
     double operand1 = 0.0;
     double operand2 = 0.0;
-    double res = 0.0;
-    StackState state = StackState::Empty;
+    Result res = {0.0, Error::NoError};
+    StackState state = StackState::WaitingFirstOperand;
 
     for (auto token = tokens.begin(); token != tokens.end(); ++token)
     {
-        if(true == isOperand(*token))
+        if(Error::NoError == res.error)
         {
-            operation = *token;
-            state = StackState::OperationEntered;
+            if(StackState::WaitingFirstOperand == state)
+            {
+                operand1 = std::stod(*token);
+                state = StackState::WaitingSecondOperand;
+            }
+            else if (StackState::WaitingSecondOperand == state)
+            {
+                operand2 = std::stod(*token);
+                state = StackState::WaitingOperation;
+            }
+            else if (StackState::WaitingOperation)
+            {
+                if(true == isOperation(*token))
+                {
+                    operation = *token;
+                    res = calculateOperation(operand1, operand2, operation);
+                    operand1 = res.value;
+                    operand2 = 0.0;
+                    state = StackState::WaitingSecondOperand;
+                }
+                else
+                {
+                    return {0.0, Error::WrongOperation};
+                }
+            }
         }
-
-        if(StackState::Empty == state)
+        else
         {
-            operand1 = std::stod(*token);
-            state = StackState::OneOperandEntered;
-        }
-        else if (StackState::OneOperandEntered == state)
-        {
-            operand2 = std::stod(*token);
-            state = StackState::TwoOperandsEntered;
-        }
-        else if (StackState::OperationEntered)
-        {
-            res = calculateOperation(operand1, operand2, operation);
-            operand1 = res;
-            operand2 = 0.0;
-            state = StackState::OneOperandEntered;
+            return res;
         }
     }
     return res;
 }
 
-bool isOperand(const std::string & operand)
+bool isOperation(const std::string & operation)
 {
-    return ("+" == operand || "-" == operand || "*" == operand || "/" == operand);
+    return ("+" == operation || "-" == operation || "*" == operation || "/" == operation);
 }
 
-double calculateOperation(double operand1, double operand2, const std::string& operation)
+Result calculateOperation(double operand1, double operand2, const std::string& operation)
 {
-    double res = 0.0;
+    Result res = {0.0, Error::NoError};
     if ("+" == operation)
     {
-        res = operand1 + operand2;
+        res.value = operand1 + operand2;
     }
     else if("-" == operation)
     {
-        res = operand1 - operand2;
+        res.value = operand1 - operand2;
     }
     else if("*" == operation)
     {
-        res = operand1 * operand2;
+        res.value = operand1 * operand2;
     }
     else if("/" == operation)
     {
-        res = operand1 / operand2;
+        if(0.0 == operand2)
+        {
+            return {0.0, Error::DivideByZero};
+        }
+        else
+        {
+            res.value = operand1 / operand2;
+        }
     }
+    return res;
 }
 

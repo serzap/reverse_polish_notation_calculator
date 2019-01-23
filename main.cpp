@@ -4,5 +4,7 @@
 
 int main()
 {
-//    std::cout << calculate("2 2 +");
+    auto result = calculateExpression("5 3 a");
+    std::cout << result.value;
+    std::cout << result.error;
 }
